@@ -9,3 +9,4 @@ watchdog
 langchain-cli[inmem]
 streamlit
 pydantic
+tavily-python
