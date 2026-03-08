@@ -10,3 +10,6 @@ langchain-cli[inmem]
 streamlit
 pydantic
 tavily-python
+google-genai
+huggingface_hub 
+requests
