@@ -1,0 +1,22 @@
+# FastAPI server
+fastapi
+uvicorn[standard]
+
+# LangGraph pipeline
+langgraph
+langchain-openai
+langchain-core
+langchain-community
+
+# Image generation
+google-genai
+
+# Web research
+tavily-python
+
+# Redis job store
+redis
+
+# Utilities
+python-dotenv
+pydantic

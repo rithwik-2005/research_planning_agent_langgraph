@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────
+# Frontend .dockerignore
+# Keeps secrets, cache, and backend files OUT
+# of the frontend Docker image
+# ─────────────────────────────────────────────
+
+# Secret keys — NEVER go inside an image
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+planner/
+
+# Backend files — not needed in frontend image
+blog_writer.py
+main.py
+backend/
+
+# Generated output files — mounted as volumes
+images/
+*.md
+*.log
+
+# Dev tools
+.vscode/
+.git/
+.gitignore
+*.dockerignore
+
+# Streamlit local config (use docker env vars instead)
+.streamlit/
+
+# OS junk
+.DS_Store
+Thumbs.db

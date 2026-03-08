@@ -1,0 +1,11 @@
+# Streamlit UI
+streamlit
+
+# HTTP calls to FastAPI
+requests
+
+# Data display
+pandas
+
+# Utilities
+python-dotenv

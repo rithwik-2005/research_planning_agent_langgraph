@@ -1,0 +1,79 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────
+# 3 Services:
+#   redis    → stores all blog jobs persistently
+#   api      → FastAPI + LangGraph (built from backend/Dockerfile)
+#   frontend → Streamlit UI       (built from frontend/Dockerfile)
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Service 1: Redis ─────────────────────────────────────
+  # No Dockerfile needed — uses the official Redis image
+  redis:
+    image: redis:7-alpine
+    container_name: blog_redis
+    ports:
+      - "6379:6379"             # expose so you can inspect with Redis tools
+    volumes:
+      - redis_data:/data        # jobs survive container restarts
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Service 2: FastAPI Backend ───────────────────────────
+  # Built from backend/Dockerfile
+  # Contains: blog_writer.py + main.py
+  api:
+    build:
+      context: ./backend        # Docker looks inside the backend/ folder
+      dockerfile: Dockerfile    # uses backend/Dockerfile
+    container_name: blog_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env                    # loads OPENAI_API_KEY, TAVILY_API_KEY, GOOGLE_API_KEY
+    environment:
+      - REDIS_HOST=redis        # "redis" matches the service name above
+      - REDIS_PORT=6379
+    volumes:
+      - ./images:/app/images    # generated images saved to your machine
+    depends_on:
+      redis:
+        condition: service_healthy   # wait until Redis passes health check
+    restart: unless-stopped
+
+  # ── Service 3: Streamlit Frontend ───────────────────────
+  # Built from frontend/Dockerfile
+  # Contains: streamlit_app.py only
+  frontend:
+    build:
+      context: ./frontend       # Docker looks inside the frontend/ folder
+      dockerfile: Dockerfile    # uses frontend/Dockerfile
+    container_name: blog_frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - API_BASE=http://api:8000   # "api" matches the service name above
+    volumes:
+      - ./images:/app/images    # same images folder so UI can display them
+    depends_on:
+      - api                     # wait until api container is started
+    restart: unless-stopped
+
+# ── Persistent volume for Redis data ─────────────────────
+volumes:
+  redis_data:
+
+# ── Internal network (created automatically by compose) ──
+# All 3 containers talk to each other by service name
+# redis, api, frontend — without exposing internal traffic
+networks:
+  default:
+    name: blog_network
